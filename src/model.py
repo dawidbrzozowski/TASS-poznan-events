@@ -21,7 +21,9 @@ class BERTEncoder:
     def generate_sentence_embedding(self, texts: List[str]) -> List[List[float]]:
         embeds = []
         for text in tqdm(texts, desc="Generating embeddings for given texts..."):
-            encoding = self._tokenizer(text, padding=True, truncation=True, return_tensors="pt")
+            encoding = self._tokenizer(
+                text, padding=True, truncation=True, return_tensors="pt"
+            )
             preds = self._model(**encoding)
             last_layer = preds["hidden_states"][-1]
             # last_four_layers = preds["hidden_states"][-4:]
@@ -42,28 +44,26 @@ class BERTEncoder:
     "-i",
     type=Path,
     required=True,
-    help="Path to the input directory, from which JSON files will be read."
+    help="Path to the input directory, from which JSON files will be read.",
 )
 def main(input_dir: Path):
     enc = BERTEncoder()
     for file_path in tqdm(
-            [
-                path
-                for path in list(input_dir.iterdir())
-                if not path.stem.endswith("embeddings")
-            ]
+        [
+            path
+            for path in list(input_dir.iterdir())
+            if not path.stem.endswith("embeddings")
+        ]
     ):
         day_data = load_json(file_path)
         names_and_descriptions = [
-            f"{event['name']} {event['description']}"
-            for event in day_data
+            f"{event['name']} {event['description']}" for event in day_data
         ]
         embeds = enc.generate_sentence_embedding(names_and_descriptions)
         write_json(
-            data=embeds,
-            out_path=file_path.parent / f"{file_path.stem}-embeddings.json"
+            data=embeds, out_path=file_path.parent / f"{file_path.stem}-embeddings.json"
         )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
