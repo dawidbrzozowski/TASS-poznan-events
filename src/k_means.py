@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from src.metrics import entropy
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
@@ -76,6 +77,15 @@ def generate_visualization_2d(
     plt.show()
 
 
+def get_metrics(categories: List[str], labels: List[int]):
+    all_labels_result: Dict[int, float] = {}
+    label_to_category_count = get_label_to_category_counts(categories, labels)
+    for label in label_to_category_count:
+        category_count = label_to_category_count[label]
+        all_labels_result[label] = entropy(category_count)
+    return all_labels_result
+
+
 if __name__ == "__main__":
     events = load_all_events()
     embeddings_as_np = np.array([event.embedding for event in events])
@@ -98,3 +108,4 @@ if __name__ == "__main__":
         categories=categories,
         type_="category"
     )
+    print(get_metrics(categories, labels))
