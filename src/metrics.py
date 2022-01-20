@@ -10,6 +10,6 @@ def entropy(class_counts: Dict[Any, int]):
     """
     elements_number = sum(class_counts.values())
     return -sum(
-        class_counts[category]/elements_number*log2(class_counts[category]/elements_number)
+        (class_counts[category]/elements_number)*(log2(class_counts[category]/elements_number))
         for category in class_counts
     )
