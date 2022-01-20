@@ -61,10 +61,9 @@ def generate_visualization_2d(
     categories: List[str],
     type_: str  # 'label' or 'category'
 ) -> None:
-    labels = [[label] for label in labels]
-    categories = [[POSSIBLE_CATEGORIES.index(category)] for category in categories]
-    concat = np.concatenate((decomposed_embeddings, labels, categories), axis=1)
-    df = pd.DataFrame(concat, columns=["TSNE-1", "TSNE-2", "label", "category"])
+    df = pd.DataFrame(decomposed_embeddings, columns=["TSNE-1", "TSNE-2"])
+    df["label"] = labels
+    df["category"] = categories
     plt.figure(figsize=(16, 10))
     sns.scatterplot(
         x="TSNE-1",
@@ -72,7 +71,6 @@ def generate_visualization_2d(
         hue=type_,
         data=df,
         palette=sns.color_palette("hls", len(POSSIBLE_CATEGORIES)),
-        legend="full",
         alpha=0.3,
     )
     plt.show()
