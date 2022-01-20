@@ -4,3 +4,4 @@
 - Dawid Brzozowski
 
 Get the data (BERT embeddings) from the following [link](https://drive.google.com/drive/folders/1aUrWcMt97UaQ1S0rfgWjUL-Q8wp1zxKc?usp=sharing).
+and place them into the main directory.
