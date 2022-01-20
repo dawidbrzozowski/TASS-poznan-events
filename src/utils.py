@@ -28,7 +28,12 @@ POSSIBLE_CATEGORIES = [
     "Dziecko",
 ]
 
-_DATA_DIRS = [Path("data/2021/3"), Path("data/2021/6"), Path("data/2021/9"), Path("data/2021/12")]
+_DATA_DIRS = [
+    Path("data/2021/3"),
+    Path("data/2021/6"),
+    Path("data/2021/9"),
+    Path("data/2021/12"),
+]
 
 
 @dataclass(frozen=True)
@@ -52,7 +57,7 @@ def load_events_from_dir(dir_path: Path) -> List[Event]:
                     name=event["name"],
                     description=event["description"],
                     category=event["category"],
-                    embedding=np.array(event_embedding)
+                    embedding=np.array(event_embedding),
                 )
             )
     return events
@@ -62,9 +67,14 @@ def load_all_events() -> List[Event]:
     events: List[Event] = []
     for data_dir in tqdm(_DATA_DIRS, desc="Loading data from dirs..."):
         events.extend(load_events_from_dir(data_dir))
-    return events
+
+    # Since the data generation took a long time to generate, and there happened to be double
+    # values, this return statement filters these unwanted doubles.
+    return [event for i, event in enumerate(events) if i % 2 == 0]
 
 
 def find_max_day_in_dir(dir_path: Path) -> int:
-    days = [int(fp.stem) for fp in dir_path.iterdir() if not fp.stem.endswith("embeddings")]
+    days = [
+        int(fp.stem) for fp in dir_path.iterdir() if not fp.stem.endswith("embeddings")
+    ]
     return max(days)
