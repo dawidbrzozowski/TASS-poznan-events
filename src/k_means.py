@@ -14,6 +14,11 @@ from src.utils import load_all_events, POSSIBLE_CATEGORIES
 
 
 def fit_kmeans_to_event_embeddings(embeddings: np.array) -> KMeans:
+    """
+    Fits Kmeans algorithm to the embedding matrix.
+    :param embeddings: Whole dataset embeddings
+    :return:
+    """
     k_means = KMeans(n_clusters=len(POSSIBLE_CATEGORIES))
     k_means.fit(embeddings)
     return k_means
@@ -50,6 +55,16 @@ def decompose_embeddings(
     pca_step_embedding: int = 25,
     tsne_final_embedding: int = 2,
 ) -> np.array:
+    """
+    Decomposes the embedding matrix from [number_of_samples, 768] to the
+    [number_of_samples, tsne_final_embedding] shape.
+    :param embedding_matrix: The embedding matrix to be decomposed.
+    :param pca_step_embedding: There is a middle step required, since TSNE is O(n^2) in terms of
+    time complexity. PCA is much faster, that's why it's used as a middle step. The minimum
+    required value for this argument is about 50.
+    :param tsne_final_embedding: Final shape will be [number_of_samples, tsne_final_embedding].
+    :return:
+    """
     pca_reduced_matrix = PCA(n_components=pca_step_embedding).fit_transform(
         embedding_matrix
     )
