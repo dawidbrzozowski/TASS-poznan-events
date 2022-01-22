@@ -1,10 +1,13 @@
 from collections import defaultdict
 from typing import List, Dict
 
+import click
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from click import INT
+
 from src.metrics import entropy
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
@@ -45,7 +48,7 @@ def get_label_to_category_counts(
     categories: List[str], labels: List[int]
 ) -> Dict[int, Dict[str, int]]:
     label_to_category_counts: Dict[int, Dict[str, int]] = {}
-    for label in range(len(POSSIBLE_CATEGORIES)):
+    for label in range(len(set(labels))):
         label_to_category_counts[label] = defaultdict(int)
 
     for category, label in zip(categories, labels):
@@ -81,6 +84,7 @@ def generate_visualization_2d(
     categories: List[str],
     type_: str  # 'label' or 'category'
 ) -> None:
+    n_colors = len(set(categories)) if type_ == "category" else len(set(labels))
     df = pd.DataFrame(decomposed_embeddings, columns=["TSNE-1", "TSNE-2"])
     df["label"] = labels
     df["category"] = categories
@@ -90,7 +94,7 @@ def generate_visualization_2d(
         y="TSNE-2",
         hue=type_,
         data=df,
-        palette=sns.color_palette("hls", len(POSSIBLE_CATEGORIES)),
+        palette=sns.color_palette("hls", n_colors),
         alpha=0.3,
     )
     plt.show()
@@ -105,12 +109,44 @@ def get_metrics(categories: List[str], labels: List[int]):
     return all_labels_result
 
 
-if __name__ == "__main__":
+@click.command(
+    help="This script loads in embeddings, "
+    "clusters the output using KMeans algorithm with a given n_clusters,"
+    "visualizes the results using PCA and T-SNE algorithms and returns "
+    "entropy metrics for each cluster."
+)
+@click.option(
+    "-c",
+    "--n_clusters",
+    type=INT,
+    default=len(POSSIBLE_CATEGORIES),
+    help="The number of clusters to be created."
+)
+@click.option(
+    "-p",
+    "--pca",
+    type=INT,
+    default=25,
+    help="There is a middle step required, since TSNE is O(n^2) in terms of "
+    "time complexity. PCA is much faster, that's why it's used as a middle step. The minimum "
+    "required value for this argument is about 50."
+)
+@click.option(
+    "-t",
+    "--tsne",
+    type=INT,
+    default=2,
+    help="The final shape of embeddings will be of shape [n_samples, <tsne>]. This is for "
+         "visualization purposes."
+)
+def main(n_clusters: INT, pca: INT, tsne: INT):
     events = load_all_events()
     embeddings_as_np = np.array([event.embedding for event in events])
-    k_means = fit_kmeans_to_event_embeddings(embeddings_as_np)
+    k_means = fit_kmeans_to_event_embeddings(embeddings_as_np, n_clusters=n_clusters)
     event_with_labels = [(evt, label) for evt, label in zip(events, k_means.labels_)]
-    decomposed_embeddings = decompose_embeddings(embeddings_as_np)
+    decomposed_embeddings = decompose_embeddings(
+        embeddings_as_np, pca_step_embedding=pca, tsne_final_embedding=tsne
+    )
 
     categories = [event.category for event, _ in event_with_labels]
     labels = [label for _, label in event_with_labels]
@@ -128,3 +164,7 @@ if __name__ == "__main__":
         type_="category"
     )
     print(get_metrics(categories, labels))
+
+
+if __name__ == "__main__":
+    main()
