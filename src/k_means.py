@@ -13,13 +13,17 @@ from sklearn.manifold import TSNE
 from src.utils import load_all_events, POSSIBLE_CATEGORIES
 
 
-def fit_kmeans_to_event_embeddings(embeddings: np.array) -> KMeans:
+def fit_kmeans_to_event_embeddings(
+    embeddings: np.array,
+    n_clusters: int = len(POSSIBLE_CATEGORIES),
+) -> KMeans:
     """
     Fits Kmeans algorithm to the embedding matrix.
-    :param embeddings: Whole dataset embeddings
-    :return:
+    :param embeddings: Whole dataset embeddings.
+    :param n_clusters: The number of clusters to be created.
+    :return: K-means for given embeddings.
     """
-    k_means = KMeans(n_clusters=len(POSSIBLE_CATEGORIES))
+    k_means = KMeans(n_clusters=n_clusters)
     k_means.fit(embeddings)
     return k_means
 
